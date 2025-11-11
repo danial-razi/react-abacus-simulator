@@ -1,0 +1,36 @@
+{
+  "short_name": "Abacus Sim",
+  "name": "React Abacus Simulator",
+  "description": "A fully functional abacus simulator with compute, tutorial, and conversion modes.",
+  "icons": [
+    {
+      "src": "/react-abacus-simulator/icons/icon-192.svg",
+      "type": "image/svg+xml",
+      "sizes": "192x192",
+      "purpose": "any"
+    },
+    {
+      "src": "/react-abacus-simulator/icons/icon-512.svg",
+      "type": "image/svg+xml",
+      "sizes": "512x512",
+      "purpose": "any"
+    },
+    {
+      "src": "/react-abacus-simulator/icons/icon-192.svg",
+      "type": "image/svg+xml",
+      "sizes": "192x192",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/react-abacus-simulator/icons/icon-512.svg",
+      "type": "image/svg+xml",
+      "sizes": "512x512",
+      "purpose": "maskable"
+    }
+  ],
+  "start_url": "/react-abacus-simulator/index.html",
+  "display": "standalone",
+  "theme_color": "#111827",
+  "background_color": "#111827",
+  "scope": "/react-abacus-simulator/"
+}

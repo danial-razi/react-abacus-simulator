@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="192" height="192" viewBox="0 0 100 100">
+    <!-- Background for PWA icon shape -->
+    <rect width="100" height="100" rx="15" fill="#111827"/>
+
+    <!-- Frame -->
+    <rect x="10" y="10" width="80" height="80" rx="10" fill="#6b5643" stroke="#382a1f" stroke-width="4"/>
+    
+    <!-- Beam -->
+    <rect x="10" y="46" width="80" height="8" fill="#382a1f"/>
+
+    <!-- Rods -->
+    <line x1="30" y1="10" x2="30" y2="90" stroke="#a08b7a" stroke-width="3"/>
+    <line x1="50" y1="10" x2="50" y2="90" stroke="#a08b7a" stroke-width="3"/>
+    <line x1="70" y1="10" x2="70" y2="90" stroke="#a08b7a" stroke-width="3"/>
+    
+    <!-- Beads -->
+    <defs>
+        <radialGradient id="beadGradIcon" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stop-color="#f59e0b" />
+            <stop offset="100%" stop-color="#b45309" />
+        </radialGradient>
+    </defs>
+    
+    <!-- Active Beads -->
+    <circle cx="30" cy="32" r="7" fill="url(#beadGradIcon)" stroke="#78350f" stroke-width="1.5"/>
+    <circle cx="50" cy="62" r="7" fill="url(#beadGradIcon)" stroke="#78350f" stroke-width="1.5"/>
+    <circle cx="50" cy="76" r="7" fill="url(#beadGradIcon)" stroke="#78350f" stroke-width="1.5"/>
+
+    <!-- Resting Beads -->
+    <circle cx="70" cy="32" r="7" fill="url(#beadGradIcon)" stroke="#78350f" stroke-width="1.5"/>
+    <circle cx="70" cy="62" r="7" fill="url(#beadGradIcon)" stroke="#78350f" stroke-width="1.5"/>
+</svg>

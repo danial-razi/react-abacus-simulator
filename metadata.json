@@ -1,0 +1,5 @@
+{
+  "name": "React Abacus Simulator",
+  "description": "A fully functional abacus simulator with compute, tutorial, and conversion modes. Users can switch between Japanese (Soroban) and Chinese (Suanpan) abacus types to learn and perform calculations.",
+  "requestFramePermissions": []
+}
