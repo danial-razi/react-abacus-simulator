@@ -48,7 +48,7 @@ For the best experience, we highly recommend installing the app as a Progressive
 
 Interested in running the project locally or contributing? Here is how to get started:
 
-1.  **Fork the repository** by clicking the 'Fork' button on the top right of the page.
+1.  **Fork the repository** by clicking the Fork button on the top right of the page.
 2.  **Clone your forked repository**:
     ```bash
     git clone https://github.com/<YOUR_USERNAME>/react-abacus-simulator.git
