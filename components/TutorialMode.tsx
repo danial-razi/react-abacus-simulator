@@ -61,24 +61,25 @@ const TutorialMode: React.FC<TutorialModeProps> = ({ abacusType, numRods, decima
     };
 
     return (
-        <div className="flex flex-col items-center gap-6">
-            <div className="w-full max-w-2xl text-center p-4 bg-gray-800/50 rounded-lg border border-gray-700 shadow-md">
-                <h2 className="text-xl font-bold text-cyan-400 mb-2">{currentStep[0]}</h2>
-                <p className="text-gray-300">{currentStep[1]}</p>
-                {target !== null && <p className="mt-4 text-lg text-gray-300">{t('target')}: <strong className="font-mono text-3xl text-white" dir="ltr">{target}</strong></p>}
-                {target !== null && <p aria-live="polite" className={`mt-3 font-semibold ${isCorrect ? 'text-emerald-400' : 'text-amber-300'}`}>{isCorrect ? t('correct') : t('tryAgain')}</p>}
-            </div>
+        <div className="mode-layout h-full min-h-0 grid grid-rows-[auto_minmax(0,1fr)] gap-2 lg:grid-cols-[19rem_minmax(0,1fr)] lg:grid-rows-1">
+            <aside className="rounded-lg border border-gray-700 bg-gray-800/50 p-2 text-center shadow-md lg:flex lg:flex-col lg:justify-center lg:p-4">
+                <h2 className="text-base font-bold text-cyan-400 mb-1 lg:text-xl">{currentStep[0]}</h2>
+                <p className="text-xs text-gray-300 lg:text-sm">{currentStep[1]}</p>
+                <div className="mt-1 flex items-center justify-center gap-3 lg:mt-4 lg:block">
+                    {target !== null && <p className="text-sm text-gray-300">{t('target')}: <strong className="font-mono text-xl text-white lg:text-3xl" dir="ltr">{target}</strong></p>}
+                    {target !== null && <p aria-live="polite" className={`max-w-md text-xs font-semibold lg:mt-3 ${isCorrect ? 'text-emerald-400' : 'text-amber-300'}`}>{isCorrect ? t('correct') : t('tryAgain')}</p>}
+                </div>
+                <div className="mt-2 flex items-center justify-center gap-2 lg:mt-5">
+                    <button onClick={() => move(-1)} disabled={step === 0} className="px-3 py-2 text-xs bg-gray-600 text-white font-semibold rounded-lg shadow-lg hover:bg-gray-700 disabled:bg-gray-800 disabled:cursor-not-allowed disabled:text-gray-500 transition-colors">{t('previous')}</button>
+                    <span className="text-xs text-gray-400 font-mono" dir="ltr">{step + 1} / {tutorialSteps.length}</span>
+                    <button onClick={() => move(1)} disabled={step === tutorialSteps.length - 1 || !isCorrect} className="px-3 py-2 text-xs bg-cyan-600 text-white font-semibold rounded-lg shadow-lg hover:bg-cyan-700 disabled:bg-gray-800 disabled:cursor-not-allowed disabled:text-gray-500 transition-colors">{t('next')}</button>
+                </div>
+            </aside>
 
-            <Abacus rods={rods} config={config} decimalPlaces={decimalPlaces} highlights={highlights}
+            <div className="min-h-0"><Abacus rods={rods} config={config} decimalPlaces={decimalPlaces} highlights={highlights}
                 handleUpperBeadClick={handleUpperBeadClick} handleLowerBeadClick={handleLowerBeadClick}
                 setUpperBeadActive={setUpperBeadActive} setLowerBeadActive={setLowerBeadActive}
-                interactive={target !== null} />
-
-            <div className="flex items-center gap-4 mt-4">
-                <button onClick={() => move(-1)} disabled={step === 0} className="px-6 py-3 bg-gray-600 text-white font-semibold rounded-lg shadow-lg hover:bg-gray-700 disabled:bg-gray-800 disabled:cursor-not-allowed disabled:text-gray-500 transition-colors">{t('previous')}</button>
-                <span className="text-gray-400 font-mono" dir="ltr">{step + 1} / {tutorialSteps.length}</span>
-                <button onClick={() => move(1)} disabled={step === tutorialSteps.length - 1 || !isCorrect} className="px-6 py-3 bg-cyan-600 text-white font-semibold rounded-lg shadow-lg hover:bg-cyan-700 disabled:bg-gray-800 disabled:cursor-not-allowed disabled:text-gray-500 transition-colors">{t('next')}</button>
-            </div>
+                interactive={target !== null} /></div>
         </div>
     );
 };

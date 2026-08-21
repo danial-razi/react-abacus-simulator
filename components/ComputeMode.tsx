@@ -79,34 +79,36 @@ const ComputeMode: React.FC<ComputeModeProps> = ({ abacusType, numRods, decimalP
     });
 
     return (
-        <div className="flex flex-col items-center gap-6">
-            <div className="w-full max-w-xl text-center p-4 bg-gray-800/50 rounded-lg border border-gray-700 shadow-md">
-                <p className="text-gray-400 text-sm mb-1">{t('currentValue')}</p>
-                <p aria-live="polite" className="text-4xl lg:text-5xl font-mono font-bold text-cyan-400 tracking-widest break-all" dir="ltr">
-                    {formattedValue}
-                </p>
-            </div>
-
-            <form onSubmit={calculate} className="w-full max-w-xl rounded-lg border border-gray-700 bg-gray-800/50 p-4">
-                <h2 className="mb-3 font-semibold text-gray-200">{t('arithmetic')}</h2>
-                <div className="grid grid-cols-[auto_1fr_auto] gap-2">
-                    <select aria-label={t('arithmetic')} value={operator} onChange={(event) => setOperator(event.target.value as Operator)} className="rounded-lg bg-gray-900 px-4 py-3 text-xl text-cyan-300">
-                        {(['+', '-', '×', '÷'] as const).map((item) => <option key={item}>{item}</option>)}
-                    </select>
-                    <input aria-label={t('operand')} inputMode="decimal" value={operand} onChange={(event) => setOperand(event.target.value.replace(/[^0-9.]/g, ''))} className="min-w-0 rounded-lg border border-gray-600 bg-gray-900 px-3 py-3 font-mono text-gray-100 focus:border-cyan-500 focus:outline-none" dir="ltr" />
-                    <button className="rounded-lg bg-cyan-600 px-4 py-3 font-semibold text-white hover:bg-cyan-500 focus-visible:ring-2 focus-visible:ring-cyan-300">{t('apply')}</button>
+        <div className="mode-layout h-full min-h-0 grid grid-rows-[auto_minmax(0,1fr)] gap-2 lg:grid-cols-[19rem_minmax(0,1fr)] lg:grid-rows-1">
+            <aside className="grid grid-cols-[.7fr_1.3fr] gap-2 lg:flex lg:min-h-0 lg:flex-col">
+                <div className="min-w-0 text-center p-2 bg-gray-800/50 rounded-lg border border-gray-700 shadow-md lg:py-4">
+                    <p className="text-gray-400 text-xs mb-0.5">{t('currentValue')}</p>
+                    <p aria-live="polite" className="text-2xl lg:text-4xl font-mono font-bold text-cyan-400 tracking-wider break-all" dir="ltr">{formattedValue}</p>
                 </div>
-                {error && <p role="alert" className="mt-3 text-sm text-amber-300">{error}</p>}
-            </form>
 
-            <Abacus rods={rods} config={config} decimalPlaces={decimalPlaces}
-                handleUpperBeadClick={handleUpperBeadClick} handleLowerBeadClick={handleLowerBeadClick}
-                setUpperBeadActive={setUpperBeadActive} setLowerBeadActive={setLowerBeadActive} />
+                <form onSubmit={calculate} className="min-w-0 rounded-lg border border-gray-700 bg-gray-800/50 p-2 lg:p-3">
+                    <h2 className="hidden mb-2 text-sm font-semibold text-gray-200 lg:block">{t('arithmetic')}</h2>
+                    <div className="grid grid-cols-[auto_minmax(0,1fr)_auto] gap-1.5">
+                        <select aria-label={t('arithmetic')} value={operator} onChange={(event) => setOperator(event.target.value as Operator)} className="rounded-lg bg-gray-900 px-2 py-2 text-lg text-cyan-300">
+                            {(['+', '-', '×', '÷'] as const).map((item) => <option key={item}>{item}</option>)}
+                        </select>
+                        <input aria-label={t('operand')} inputMode="decimal" value={operand} onChange={(event) => setOperand(event.target.value.replace(/[^0-9.]/g, ''))} className="min-w-0 rounded-lg border border-gray-600 bg-gray-900 px-2 py-2 font-mono text-gray-100 focus:border-cyan-500 focus:outline-none" dir="ltr" />
+                        <button className="rounded-lg bg-cyan-600 px-2 py-2 text-xs font-semibold text-white hover:bg-cyan-500 focus-visible:ring-2 focus-visible:ring-cyan-300 lg:px-3">{t('apply')}</button>
+                    </div>
+                    {error && <p role="alert" className="mt-1 text-xs text-amber-300">{error}</p>}
+                </form>
 
-            <div className="flex flex-wrap justify-center gap-3 mt-4">
-                <button onClick={undo} disabled={!canUndo} className="px-5 py-3 bg-gray-700 text-white font-semibold rounded-lg hover:bg-gray-600 disabled:opacity-40 disabled:cursor-not-allowed focus-visible:ring-2 focus-visible:ring-cyan-400">{t('undo')}</button>
-                <button onClick={redo} disabled={!canRedo} className="px-5 py-3 bg-gray-700 text-white font-semibold rounded-lg hover:bg-gray-600 disabled:opacity-40 disabled:cursor-not-allowed focus-visible:ring-2 focus-visible:ring-cyan-400">{t('redo')}</button>
-                <button onClick={handleClear} className="px-6 py-3 bg-red-600 text-white font-semibold rounded-lg shadow-lg hover:bg-red-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-400 transition-colors">{t('clear')}</button>
+                <div className="col-span-2 flex justify-center gap-1.5 lg:flex-wrap">
+                    <button onClick={undo} disabled={!canUndo} className="px-3 py-2 text-xs bg-gray-700 text-white font-semibold rounded-lg hover:bg-gray-600 disabled:opacity-40 disabled:cursor-not-allowed focus-visible:ring-2 focus-visible:ring-cyan-400">{t('undo')}</button>
+                    <button onClick={redo} disabled={!canRedo} className="px-3 py-2 text-xs bg-gray-700 text-white font-semibold rounded-lg hover:bg-gray-600 disabled:opacity-40 disabled:cursor-not-allowed focus-visible:ring-2 focus-visible:ring-cyan-400">{t('redo')}</button>
+                    <button onClick={handleClear} className="px-3 py-2 text-xs bg-red-600 text-white font-semibold rounded-lg shadow-lg hover:bg-red-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-400 transition-colors">{t('clear')}</button>
+                </div>
+            </aside>
+
+            <div className="min-h-0">
+                <Abacus rods={rods} config={config} decimalPlaces={decimalPlaces}
+                    handleUpperBeadClick={handleUpperBeadClick} handleLowerBeadClick={handleLowerBeadClick}
+                    setUpperBeadActive={setUpperBeadActive} setLowerBeadActive={setLowerBeadActive} />
             </div>
         </div>
     );

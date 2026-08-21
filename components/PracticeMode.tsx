@@ -67,33 +67,34 @@ const PracticeMode: React.FC<PracticeModeProps> = ({ abacusType, numRods, decima
     };
 
     return (
-        <div className="flex flex-col items-center gap-6">
-            <section className="w-full max-w-2xl rounded-xl border border-gray-700 bg-gray-800/50 p-4 text-center">
-                <div className="mb-4 flex flex-wrap justify-center gap-4 text-sm text-gray-300">
+        <div className="mode-layout h-full min-h-0 grid grid-rows-[auto_minmax(0,1fr)] gap-2 lg:grid-cols-[19rem_minmax(0,1fr)] lg:grid-rows-1">
+            <section className="rounded-xl border border-gray-700 bg-gray-800/50 p-2 text-center lg:flex lg:flex-col lg:justify-center lg:p-4">
+                <div className="mb-1 flex flex-wrap justify-center gap-3 text-xs text-gray-300 lg:mb-3">
                     <span>{t('score')}: <strong className="text-cyan-300">{score}</strong></span>
                     <span>{t('streak')}: <strong className="text-cyan-300">{streak}</strong></span>
                     <span>{t('best')}: <strong className="text-cyan-300">{best}</strong></span>
                 </div>
-                <label className="mx-auto mb-4 block max-w-xs text-sm text-gray-400">
-                    <span className="mb-2 block">{t('difficulty')}</span>
-                    <select value={difficulty} onChange={(event) => changeDifficulty(event.target.value as Difficulty)} className="w-full rounded-lg bg-gray-900 px-3 py-2 text-gray-100">
+                <label className="mx-auto mb-1 flex max-w-xs items-center justify-center gap-2 text-xs text-gray-400 lg:mb-3 lg:block">
+                    <span className="lg:mb-1 lg:block">{t('difficulty')}</span>
+                    <select value={difficulty} onChange={(event) => changeDifficulty(event.target.value as Difficulty)} className="rounded-lg bg-gray-900 px-2 py-1 text-gray-100 lg:w-full">
                         <option value="easy">{t('easy')}</option><option value="medium">{t('medium')}</option><option value="hard">{t('hard')}</option>
                     </select>
                 </label>
-                <p className="text-gray-400">{t('target')}</p>
-                <p className="font-mono text-5xl font-bold text-cyan-400" dir="ltr">{format(target)}</p>
-                <p className="mt-2 text-gray-400">{t('currentValue')}: <span className="font-mono text-white" dir="ltr">{format(value)}</span></p>
-                {feedback && <p role="status" className={`mt-3 font-semibold ${feedback === 'correct' ? 'text-emerald-400' : 'text-amber-300'}`}>{feedback === 'correct' ? t('practiceCorrect') : t('practiceWrong')}</p>}
+                <div className="flex items-baseline justify-center gap-2 lg:block">
+                    <p className="text-xs text-gray-400">{t('target')}</p>
+                    <p className="font-mono text-2xl font-bold text-cyan-400 lg:text-5xl" dir="ltr">{format(target)}</p>
+                    <p className="text-xs text-gray-400 lg:mt-2">{t('currentValue')}: <span className="font-mono text-white" dir="ltr">{format(value)}</span></p>
+                </div>
+                {feedback && <p role="status" className={`mt-1 text-xs font-semibold lg:mt-3 ${feedback === 'correct' ? 'text-emerald-400' : 'text-amber-300'}`}>{feedback === 'correct' ? t('practiceCorrect') : t('practiceWrong')}</p>}
+                <div className="mt-1 flex flex-wrap justify-center gap-2 lg:mt-4">
+                    <button onClick={checkAnswer} disabled={feedback === 'correct'} className="rounded-lg bg-emerald-600 px-3 py-2 text-xs font-semibold text-white hover:bg-emerald-500 disabled:cursor-not-allowed disabled:opacity-40 focus-visible:ring-2 focus-visible:ring-emerald-300">{t('check')}</button>
+                    <button onClick={() => nextChallenge()} className="rounded-lg bg-cyan-600 px-3 py-2 text-xs font-semibold text-white hover:bg-cyan-500 focus-visible:ring-2 focus-visible:ring-cyan-300">{t('newChallenge')}</button>
+                </div>
             </section>
 
-            <Abacus rods={rods} config={config} decimalPlaces={decimalPlaces}
+            <div className="min-h-0"><Abacus rods={rods} config={config} decimalPlaces={decimalPlaces}
                 handleUpperBeadClick={handleUpperBeadClick} handleLowerBeadClick={handleLowerBeadClick}
-                setUpperBeadActive={setUpperBeadActive} setLowerBeadActive={setLowerBeadActive} />
-
-            <div className="flex flex-wrap justify-center gap-3">
-                <button onClick={checkAnswer} disabled={feedback === 'correct'} className="rounded-lg bg-emerald-600 px-6 py-3 font-semibold text-white hover:bg-emerald-500 disabled:cursor-not-allowed disabled:opacity-40 focus-visible:ring-2 focus-visible:ring-emerald-300">{t('check')}</button>
-                <button onClick={() => nextChallenge()} className="rounded-lg bg-cyan-600 px-6 py-3 font-semibold text-white hover:bg-cyan-500 focus-visible:ring-2 focus-visible:ring-cyan-300">{t('newChallenge')}</button>
-            </div>
+                setUpperBeadActive={setUpperBeadActive} setLowerBeadActive={setLowerBeadActive} /></div>
         </div>
     );
 };

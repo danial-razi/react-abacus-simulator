@@ -83,15 +83,14 @@ const Abacus: React.FC<AbacusProps> = ({
     };
 
     return (
-        <div className="w-full overflow-x-auto p-2 sm:p-4 bg-gray-800 rounded-lg shadow-inner border border-gray-700">
+        <div className="abacus-stage w-full h-full min-h-0 overflow-hidden p-1 sm:p-2 bg-gray-800 rounded-lg shadow-inner border border-gray-700 flex items-center justify-center">
             <svg
                 role="group"
                 aria-label={t('interactiveAbacus')}
                 width="100%"
                 viewBox={`0 0 ${svgWidth} ${svgHeight}`}
                 preserveAspectRatio="xMidYMid meet"
-                className="block h-auto touch-none"
-                style={{ minWidth: `${Math.min(svgWidth, 720)}px` }}
+                className="block h-full max-h-full w-full touch-none"
             >
                 <title>{`${t('interactiveAbacus')}. ${t('abacusHelp')}`}</title>
                 <defs>

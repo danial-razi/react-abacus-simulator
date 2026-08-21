@@ -33,14 +33,14 @@ const ConvertMode: React.FC<ConvertModeProps> = ({ abacusType, numRods, decimalP
     };
 
     return (
-        <div className="flex flex-col items-center gap-6">
-            <div className="w-full max-w-md text-center p-4 bg-gray-800/50 rounded-lg border border-gray-700 shadow-md">
-                <label htmlFor="number-input" className="text-gray-400 text-sm mb-2 block">{t('enterNumber')}</label>
+        <div className="mode-layout h-full min-h-0 grid grid-rows-[auto_minmax(0,1fr)] gap-2 lg:grid-cols-[19rem_minmax(0,1fr)] lg:grid-rows-1">
+            <div className="text-center p-3 bg-gray-800/50 rounded-lg border border-gray-700 shadow-md lg:self-center">
+                <label htmlFor="number-input" className="text-gray-400 text-xs mb-1 block">{t('enterNumber')}</label>
                 <input id="number-input" type="text" inputMode="decimal" value={inputValue} onChange={handleChange}
-                    className="w-full bg-gray-900/70 border border-gray-600 rounded-lg text-center text-4xl p-3 font-mono text-cyan-400 focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 outline-none" dir="ltr" />
+                    className="w-full bg-gray-900/70 border border-gray-600 rounded-lg text-center text-2xl p-2 font-mono text-cyan-400 focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 outline-none" dir="ltr" />
             </div>
-            <Abacus rods={rods} config={config} decimalPlaces={decimalPlaces}
-                handleUpperBeadClick={() => {}} handleLowerBeadClick={() => {}} interactive={false} />
+            <div className="min-h-0"><Abacus rods={rods} config={config} decimalPlaces={decimalPlaces}
+                handleUpperBeadClick={() => {}} handleLowerBeadClick={() => {}} interactive={false} /></div>
         </div>
     );
 };

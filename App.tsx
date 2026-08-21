@@ -54,22 +54,24 @@ const App: React.FC = () => {
     };
 
     const Header = useMemo(() => (
-        <header className="w-full max-w-5xl mx-auto p-4 md:p-6 flex flex-col items-center text-center">
-             <AbacusLogo className="h-16 w-16 mb-4" />
-            <h1 className="text-3xl md:text-4xl font-bold text-cyan-400 tracking-wider">
-                {language === 'fa' ? 'شبیه‌ساز چرتکه' : 'React Abacus Simulator'}
-            </h1>
-            <p className="text-gray-400 mt-2">
-                {language === 'fa' ? 'هنر محاسبه با چرتکه را یاد بگیر و تمرین کن.' : 'Learn and master the art of the abacus.'}
-            </p>
+        <header className="app-header w-full max-w-7xl mx-auto shrink-0 flex items-center justify-center gap-3 py-1 text-start">
+             <AbacusLogo className="h-10 w-10 shrink-0 sm:h-12 sm:w-12" />
+            <div>
+                <h1 className="text-xl sm:text-2xl font-bold text-cyan-400 tracking-wider leading-tight">
+                    {language === 'fa' ? 'شبیه‌ساز چرتکه' : 'React Abacus Simulator'}
+                </h1>
+                <p className="hidden text-xs text-gray-400 sm:block">
+                    {language === 'fa' ? 'هنر محاسبه با چرتکه را یاد بگیر و تمرین کن.' : 'Learn and master the art of the abacus.'}
+                </p>
+            </div>
         </header>
     ), [language]);
 
     return (
         <I18nProvider language={language}>
-        <div className="min-h-screen bg-gray-900 text-gray-100 flex flex-col items-center p-2 sm:p-4 font-sans">
+        <div className="h-[100dvh] overflow-hidden bg-gray-900 text-gray-100 flex flex-col items-center gap-1 p-2 font-sans">
             {Header}
-            <main className="w-full flex-grow flex flex-col items-center">
+            <main className="w-full max-w-7xl min-h-0 flex-1 flex flex-col items-center gap-2">
                 <Controls
                     mode={mode}
                     setMode={setMode}
@@ -84,11 +86,11 @@ const App: React.FC = () => {
                     decimalPlaces={decimalPlaces}
                     setDecimalPlaces={setDecimalPlaces}
                 />
-                <div className="w-full max-w-5xl mt-6">
+                <div className="w-full min-h-0 flex-1">
                     {renderMode()}
                 </div>
             </main>
-            <footer className="w-full max-w-5xl mx-auto p-4 text-center text-gray-500 text-sm">
+            <footer className="w-full shrink-0 text-center text-[10px] leading-none text-gray-600">
                 <p>{language === 'fa' ? 'ساخته‌شده با React، TypeScript و Tailwind CSS.' : 'Built with React, TypeScript, and Tailwind CSS.'}</p>
             </footer>
         </div>
