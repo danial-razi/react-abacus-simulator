@@ -31,7 +31,7 @@ A bilingual, accessible abacus learning app with compute, guided tutorial, pract
 - **Four Learning Modes**:
   - **Compute**: Move beads freely or apply addition, subtraction, multiplication, and division.
   - **Tutorial**: Complete guided, interactive lessons instead of only watching examples.
-  - **Practice**: Solve random challenges with difficulty levels, streaks, scores, and a saved best score.
+  - **Practice**: Solve hidden-answer arithmetic challenges across all four operations, with difficulty levels, streaks, scores, and a saved best score. Hard mode includes 3×3 and 3×4-digit multiplication.
   - **Convert**: Enter an integer or decimal and see its bead representation.
 - **Flexible Layout**: Choose 5, 9, or 13 rods and 0–3 decimal places.
 - **Accessible Interaction**: Click, drag, or use Tab, arrow keys, Space, and Enter. Undo/redo shortcuts are supported.
@@ -55,7 +55,7 @@ Interested in running the project locally or contributing? Here is how to get st
 1.  **Fork the repository** by clicking the Fork button on the top right of the page.
 2.  **Clone your forked repository**:
     ```bash
-    git clone https://github.com/<YOUR_USERNAME>/react-abacus-simulator.git
+    git clone https://github.com/danial-razi/react-abacus-simulator.git
     ```
 3.  **Navigate to the project directory**:
     ```bash
