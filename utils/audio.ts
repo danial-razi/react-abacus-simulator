@@ -2,6 +2,11 @@
 // This avoids needing to host and load audio files.
 
 let audioContext: AudioContext | null = null;
+let audioEnabled = true;
+
+export const setAudioEnabled = (enabled: boolean) => {
+    audioEnabled = enabled;
+};
 
 const getAudioContext = (): AudioContext | null => {
     // Return null during server-side rendering
@@ -9,8 +14,12 @@ const getAudioContext = (): AudioContext | null => {
 
     if (!audioContext) {
         try {
-            audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
-        } catch (e) {
+            const AudioContextClass = window.AudioContext || (window as Window & {
+                webkitAudioContext?: typeof AudioContext;
+            }).webkitAudioContext;
+            if (!AudioContextClass) return null;
+            audioContext = new AudioContextClass();
+        } catch {
             console.error("Web Audio API is not supported in this browser");
             return null;
         }
@@ -19,6 +28,7 @@ const getAudioContext = (): AudioContext | null => {
 };
 
 const playSound = (type: OscillatorType, frequency: number, duration: number, volume: number, rampTo: number = 0.0001, rampTime: number = duration) => {
+    if (!audioEnabled) return;
     const ctx = getAudioContext();
     // Resume context if it's suspended (autoplay policies)
     if (ctx?.state === 'suspended') {
@@ -51,6 +61,7 @@ export const playButtonClickSound = () => {
 };
 
 export const playClearSound = () => {
+    if (!audioEnabled) return;
     const ctx = getAudioContext();
     if (ctx?.state === 'suspended') {
         ctx.resume();
@@ -75,6 +86,7 @@ export const playClearSound = () => {
 };
 
 export const playModeSwitchSound = () => {
+    if (!audioEnabled) return;
     const ctx = getAudioContext();
     if (ctx?.state === 'suspended') {
         ctx.resume();

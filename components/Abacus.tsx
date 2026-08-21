@@ -1,23 +1,35 @@
 
 import React from 'react';
-import { RodState, AbacusConfig } from '../types';
+import type { RodState, AbacusConfig, AbacusHighlight } from '../types';
 import Bead from './Bead';
-
-interface HighlightInfo {
-    rodIndex: number;
-    upperBeads?: number[];
-    lowerBeads?: number;
-}
+import { useI18n } from '../i18n';
 
 interface AbacusProps {
     rods: RodState[];
     config: AbacusConfig;
     handleUpperBeadClick: (rodIndex: number, beadIndex: number) => void;
     handleLowerBeadClick: (rodIndex: number, beadIndex: number) => void;
-    highlights?: HighlightInfo[];
+    setUpperBeadActive?: (rodIndex: number, beadIndex: number, active: boolean) => void;
+    setLowerBeadActive?: (rodIndex: number, beadIndex: number, active: boolean) => void;
+    highlights?: AbacusHighlight[];
+    interactive?: boolean;
+    decimalPlaces?: number;
 }
 
-const Abacus: React.FC<AbacusProps> = ({ rods, config, handleUpperBeadClick, handleLowerBeadClick, highlights = [] }) => {
+type ArrowKey = 'ArrowUp' | 'ArrowDown' | 'ArrowLeft' | 'ArrowRight';
+
+const Abacus: React.FC<AbacusProps> = ({
+    rods,
+    config,
+    handleUpperBeadClick,
+    handleLowerBeadClick,
+    setUpperBeadActive,
+    setLowerBeadActive,
+    highlights = [],
+    interactive = true,
+    decimalPlaces = 0,
+}) => {
+    const { t } = useI18n();
     const numRods = rods.length;
     const framePadding = 20;
     const rodSpacing = 60;
@@ -36,9 +48,52 @@ const Abacus: React.FC<AbacusProps> = ({ rods, config, handleUpperBeadClick, han
     
     const beamY = upperSectionHeight + framePadding;
 
+    const beadId = (rodIndex: number, deck: 'upper' | 'lower', beadIndex: number) =>
+        `abacus-bead-${rodIndex}-${deck}-${beadIndex}`;
+
+    const navigate = (rodIndex: number, deck: 'upper' | 'lower', beadIndex: number, key: ArrowKey) => {
+        let nextRod = rodIndex;
+        let nextDeck = deck;
+        let nextBead = beadIndex;
+
+        if (key === 'ArrowLeft') nextRod = Math.max(0, rodIndex - 1);
+        if (key === 'ArrowRight') nextRod = Math.min(rods.length - 1, rodIndex + 1);
+        if (key === 'ArrowUp') {
+            if (deck === 'lower' && beadIndex === 0) {
+                nextDeck = 'upper';
+                nextBead = 0;
+            } else if (deck === 'lower') {
+                nextBead = beadIndex - 1;
+            } else {
+                nextBead = Math.min(config.upperBeads - 1, beadIndex + 1);
+            }
+        }
+        if (key === 'ArrowDown') {
+            if (deck === 'upper' && beadIndex === 0) {
+                nextDeck = 'lower';
+                nextBead = 0;
+            } else if (deck === 'upper') {
+                nextBead = beadIndex - 1;
+            } else {
+                nextBead = Math.min(config.lowerBeads - 1, beadIndex + 1);
+            }
+        }
+
+        document.getElementById(beadId(nextRod, nextDeck, nextBead))?.focus();
+    };
+
     return (
-        <div className="w-full overflow-x-auto p-4 bg-gray-800 rounded-lg shadow-inner border border-gray-700">
-            <svg width="100%" viewBox={`0 0 ${svgWidth} ${svgHeight}`} preserveAspectRatio="xMidYMid meet">
+        <div className="w-full overflow-x-auto p-2 sm:p-4 bg-gray-800 rounded-lg shadow-inner border border-gray-700">
+            <svg
+                role="group"
+                aria-label={t('interactiveAbacus')}
+                width="100%"
+                viewBox={`0 0 ${svgWidth} ${svgHeight}`}
+                preserveAspectRatio="xMidYMid meet"
+                className="block h-auto touch-none"
+                style={{ minWidth: `${Math.min(svgWidth, 720)}px` }}
+            >
+                <title>{`${t('interactiveAbacus')}. ${t('abacusHelp')}`}</title>
                 <defs>
                     <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
                         <feDropShadow dx="0" dy="0" stdDeviation="3.5" floodColor="#22d3ee" />
@@ -46,15 +101,17 @@ const Abacus: React.FC<AbacusProps> = ({ rods, config, handleUpperBeadClick, han
                 </defs>
 
                 {/* Frame */}
-                <rect x="0" y="0" width={svgWidth} height={svgHeight} rx="15" fill="#4a3728" stroke="#382a1f" strokeWidth="4" />
-                <rect x={framePadding/2} y={framePadding/2} width={svgWidth-framePadding} height={svgHeight-framePadding} rx="10" fill="#6b5643" />
+                <rect aria-hidden="true" x="0" y="0" width={svgWidth} height={svgHeight} rx="15" fill="#4a3728" stroke="#382a1f" strokeWidth="4" />
+                <rect aria-hidden="true" x={framePadding/2} y={framePadding/2} width={svgWidth-framePadding} height={svgHeight-framePadding} rx="10" fill="#6b5643" />
                 
                 {/* Beam */}
-                <rect x={framePadding/2} y={beamY - beamHeight/2} width={svgWidth-framePadding} height={beamHeight} fill="#382a1f" />
+                <rect aria-hidden="true" x={framePadding/2} y={beamY - beamHeight/2} width={svgWidth-framePadding} height={beamHeight} fill="#382a1f" />
                 
                 {rods.map((rod, i) => {
                     const rodX = framePadding + beadRadius + i * rodSpacing;
-                    const isUnitMarker = (rods.length - i - 1) % 3 === 0 && i !== rods.length - 1;
+                    const exponent = rods.length - i - 1 - decimalPlaces;
+                    const isUnitMarker = exponent === 0;
+                    const isGroupMarker = exponent !== 0 && exponent % 3 === 0;
                     const rodHighlight = highlights.find(h => h.rodIndex === i);
 
                     return (
@@ -65,26 +122,33 @@ const Abacus: React.FC<AbacusProps> = ({ rods, config, handleUpperBeadClick, han
                                 x2={rodX} y2={svgHeight - framePadding}
                                 stroke="#a08b7a" strokeWidth={rodStrokeWidth}
                             />
-                            {isUnitMarker && (
-                                <circle cx={rodX} cy={beamY} r="4" fill="white" />
+                            {(isUnitMarker || isGroupMarker) && (
+                                <circle aria-hidden="true" cx={rodX} cy={beamY} r={isUnitMarker ? 5 : 3} fill={isUnitMarker ? '#22d3ee' : 'white'} />
                             )}
                             
                             {/* Upper Beads */}
                             {Array.from({ length: config.upperBeads }).map((_, j) => {
-                                const isActive = rod.upperBeads[j];
+                                const isActive = j < rod.upperBeadsActive;
                                 const y = isActive 
-                                    ? beamY - beamHeight / 2 - beadRadius - 5
-                                    : framePadding + beadRadius + 5 + j * (beadRadius * 2 + 10);
-                                const isHighlighted = isActive && (rodHighlight?.upperBeads?.includes(j) ?? false);
+                                    ? beamY - beamHeight / 2 - beadRadius - 5 - j * (beadRadius * 2 + 10)
+                                    : framePadding + beadRadius + 5 + (config.upperBeads - 1 - j) * (beadRadius * 2 + 10);
+                                const isHighlighted = rodHighlight?.upperBeads?.includes(j) ?? false;
                                 
                                 return (
                                     <Bead
                                         key={`upper-${i}-${j}`}
+                                        id={beadId(i, 'upper', j)}
                                         cx={rodX}
                                         cy={y}
                                         r={beadRadius}
-                                        onClick={() => handleUpperBeadClick(i, j)}
+                                        deck="upper"
+                                        isActive={isActive}
+                                        label={`${t('upperBead')} ${j + 1}، ${t('rod')} ${numRods - i}، ${t('value')} 5`}
+                                        onToggle={() => handleUpperBeadClick(i, j)}
+                                        onSetActive={(active) => setUpperBeadActive?.(i, j, active)}
+                                        onNavigate={(key) => navigate(i, 'upper', j, key)}
                                         isHighlighted={isHighlighted}
+                                        disabled={!interactive}
                                     />
                                 );
                             })}
@@ -95,16 +159,23 @@ const Abacus: React.FC<AbacusProps> = ({ rods, config, handleUpperBeadClick, han
                                 const y = beadIsActive
                                     ? beamY + beamHeight/2 + beadRadius + 5 + j * (beadRadius * 2 + 10)
                                     : svgHeight - framePadding - beadRadius - 5 - (config.lowerBeads - 1 - j) * (beadRadius * 2 + 10);
-                                const isHighlighted = beadIsActive && rodHighlight?.lowerBeads ? j < rodHighlight.lowerBeads : false;
+                                const isHighlighted = rodHighlight?.lowerBeads ? j < rodHighlight.lowerBeads : false;
 
                                 return (
                                     <Bead
                                         key={`lower-${i}-${j}`}
+                                        id={beadId(i, 'lower', j)}
                                         cx={rodX}
                                         cy={y}
                                         r={beadRadius}
-                                        onClick={() => handleLowerBeadClick(i, j)}
+                                        deck="lower"
+                                        isActive={beadIsActive}
+                                        label={`${t('lowerBead')} ${j + 1}، ${t('rod')} ${numRods - i}، ${t('value')} 1`}
+                                        onToggle={() => handleLowerBeadClick(i, j)}
+                                        onSetActive={(active) => setLowerBeadActive?.(i, j, active)}
+                                        onNavigate={(key) => navigate(i, 'lower', j, key)}
                                         isHighlighted={isHighlighted}
+                                        disabled={!interactive}
                                     />
                                 );
                             })}

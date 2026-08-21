@@ -1,107 +1,105 @@
 
-import { useState, useCallback, useMemo, useEffect } from 'react';
-import { AbacusType, RodState, AbacusConfig } from '../types';
+import { useState, useCallback, useMemo } from 'react';
+import type { AbacusType, RodState } from '../types';
+import {
+    ABACUS_CONFIGS,
+    createAbacusState,
+    rodsToValue,
+    setBeadActive,
+    toggleBead,
+    valueToRods,
+} from '../domain/abacus';
 
-const ABACUS_CONFIGS: Record<AbacusType, AbacusConfig> = {
-    [AbacusType.JAPANESE]: { upperBeads: 1, lowerBeads: 4 },
-    [AbacusType.CHINESE]: { upperBeads: 2, lowerBeads: 5 },
-};
-
-export const useAbacus = (abacusType: AbacusType, numRods: number) => {
+export const useAbacus = (abacusType: AbacusType, numRods: number, decimalPlaces = 0) => {
     const config = ABACUS_CONFIGS[abacusType];
 
-    const getInitialRodState = useCallback((): RodState => ({
-        upperBeads: Array(config.upperBeads).fill(false),
-        lowerBeadsActive: 0,
-    }), [config]);
+    const getInitialState = useCallback(() => createAbacusState(numRods), [numRods]);
 
-    const getInitialState = useCallback(() => Array(numRods).fill(null).map(getInitialRodState), [numRods, getInitialRodState]);
+    const [history, setHistory] = useState<{ past: RodState[][]; present: RodState[]; future: RodState[][] }>(() => ({
+        past: [],
+        present: getInitialState(),
+        future: [],
+    }));
 
-    const [rods, setRods] = useState<RodState[]>(getInitialState());
+    const commit = useCallback((update: (rods: RodState[]) => RodState[]) => {
+        setHistory(current => {
+            const next = update(current.present);
+            if (next === current.present) return current;
+            return {
+                past: [...current.past.slice(-49), current.present],
+                present: next,
+                future: [],
+            };
+        });
+    }, []);
 
-    useEffect(() => {
-        setRods(getInitialState());
-    }, [abacusType, numRods, getInitialState]);
+    const rods = history.present;
 
     const value = useMemo(() => {
-        return rods.reduce((acc, rod, index) => {
-            const upperValue = rod.upperBeads.filter(Boolean).length * 5;
-            const lowerValue = rod.lowerBeadsActive;
-            const rodValue = upperValue + lowerValue;
-            return acc + rodValue * Math.pow(10, rods.length - 1 - index);
-        }, 0);
-    }, [rods]);
+        return rodsToValue(rods, decimalPlaces);
+    }, [decimalPlaces, rods]);
 
     const clear = useCallback(() => {
-        setRods(getInitialState());
-    }, [getInitialState]);
+        commit(() => getInitialState());
+    }, [commit, getInitialState]);
 
     const setValue = useCallback((num: number) => {
-        const newRods: RodState[] = getInitialState();
-        let numStr = Math.floor(num).toString();
-        
-        if (numStr.length > numRods) {
-            numStr = numStr.slice(numStr.length - numRods);
-        }
-
-        const startIndex = numRods - numStr.length;
-
-        for (let i = 0; i < numStr.length; i++) {
-            let digit = parseInt(numStr[i], 10);
-            const rodIndex = startIndex + i;
-            
-            const newRod: RodState = {
-                upperBeads: Array(config.upperBeads).fill(false),
-                lowerBeadsActive: 0,
-            };
-
-            if (config.upperBeads === 2) { // Chinese suanpan
-                 if (digit >= 10) {
-                    newRod.upperBeads[0] = true;
-                    newRod.upperBeads[1] = true;
-                    digit -= 10;
-                } else if (digit >= 5) {
-                    newRod.upperBeads[0] = true;
-                    digit -= 5;
-                }
-            } else { // Japanese soroban
-                if (digit >= 5) {
-                    newRod.upperBeads[0] = true;
-                    digit -= 5;
-                }
-            }
-            newRod.lowerBeadsActive = digit;
-            newRods[rodIndex] = newRod;
-        }
-        setRods(newRods);
-
-    }, [config, numRods, getInitialState]);
+        commit(() => valueToRods(num, numRods, abacusType, decimalPlaces));
+    }, [abacusType, commit, decimalPlaces, numRods]);
 
     const handleUpperBeadClick = useCallback((rodIndex: number, beadIndex: number) => {
-        setRods(prevRods => {
-            const newRods = [...prevRods];
-            const rod = { ...newRods[rodIndex] };
-            rod.upperBeads = [...rod.upperBeads];
-            rod.upperBeads[beadIndex] = !rod.upperBeads[beadIndex];
-            newRods[rodIndex] = rod;
-            return newRods;
-        });
-    }, []);
+        commit(prevRods => toggleBead(prevRods, rodIndex, 'upper', beadIndex));
+    }, [commit]);
 
     const handleLowerBeadClick = useCallback((rodIndex: number, beadIndex: number) => {
-        setRods(prevRods => {
-            const newRods = [...prevRods];
-            const rod = newRods[rodIndex];
-            const clickedBeadIsActive = beadIndex < rod.lowerBeadsActive;
-            
-            if (clickedBeadIsActive) {
-                newRods[rodIndex] = { ...rod, lowerBeadsActive: beadIndex };
-            } else {
-                newRods[rodIndex] = { ...rod, lowerBeadsActive: beadIndex + 1 };
-            }
-            return newRods;
+        commit(prevRods => toggleBead(prevRods, rodIndex, 'lower', beadIndex));
+    }, [commit]);
+
+    const setUpperBeadActive = useCallback((rodIndex: number, beadIndex: number, active: boolean) => {
+        commit(prevRods => setBeadActive(prevRods, rodIndex, 'upper', beadIndex, active));
+    }, [commit]);
+
+    const setLowerBeadActive = useCallback((rodIndex: number, beadIndex: number, active: boolean) => {
+        commit(prevRods => setBeadActive(prevRods, rodIndex, 'lower', beadIndex, active));
+    }, [commit]);
+
+    const undo = useCallback(() => {
+        setHistory(current => {
+            const previous = current.past.at(-1);
+            if (!previous) return current;
+            return {
+                past: current.past.slice(0, -1),
+                present: previous,
+                future: [current.present, ...current.future],
+            };
         });
     }, []);
 
-    return { rods, value, setValue, clear, config, handleUpperBeadClick, handleLowerBeadClick };
+    const redo = useCallback(() => {
+        setHistory(current => {
+            const next = current.future[0];
+            if (!next) return current;
+            return {
+                past: [...current.past, current.present],
+                present: next,
+                future: current.future.slice(1),
+            };
+        });
+    }, []);
+
+    return {
+        rods,
+        value,
+        setValue,
+        clear,
+        config,
+        handleUpperBeadClick,
+        handleLowerBeadClick,
+        setUpperBeadActive,
+        setLowerBeadActive,
+        undo,
+        redo,
+        canUndo: history.past.length > 0,
+        canRedo: history.future.length > 0,
+    };
 };

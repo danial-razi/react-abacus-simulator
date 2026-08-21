@@ -1,9 +1,14 @@
-import React, { useState, useMemo } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { AbacusType, Mode } from './types';
 import Controls from './components/Controls';
 import ComputeMode from './components/ComputeMode';
 import TutorialMode from './components/TutorialMode';
 import ConvertMode from './components/ConvertMode';
+import PracticeMode from './components/PracticeMode';
+import { usePersistentState } from './hooks/usePersistentState';
+import { setAudioEnabled } from './utils/audio';
+import { I18nProvider } from './i18n';
+import type { Language } from './types';
 
 const AbacusLogo: React.FC<{className?: string}> = ({className}) => (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" className={className}>
@@ -23,17 +28,28 @@ const AbacusLogo: React.FC<{className?: string}> = ({className}) => (
 const App: React.FC = () => {
     const [mode, setMode] = useState<Mode>(Mode.COMPUTE);
     const [abacusType, setAbacusType] = useState<AbacusType>(AbacusType.JAPANESE);
-    const numRods = 13;
+    const [soundEnabled, setSoundEnabled] = usePersistentState('abacus:sound', true);
+    const [language, setLanguage] = usePersistentState<Language>('abacus:language', 'en');
+    const [numRods, setNumRods] = usePersistentState('abacus:rods', 13);
+    const [decimalPlaces, setDecimalPlaces] = usePersistentState('abacus:decimals', 0);
+
+    useEffect(() => setAudioEnabled(soundEnabled), [soundEnabled]);
+    useEffect(() => {
+        document.documentElement.lang = language;
+        document.documentElement.dir = language === 'fa' ? 'rtl' : 'ltr';
+    }, [language]);
 
     const renderMode = () => {
         switch (mode) {
             case Mode.TUTORIAL:
-                return <TutorialMode abacusType={abacusType} numRods={numRods} />;
+                return <TutorialMode key={`${abacusType}-${numRods}-${decimalPlaces}`} abacusType={abacusType} numRods={numRods} decimalPlaces={decimalPlaces} />;
+            case Mode.PRACTICE:
+                return <PracticeMode key={`${abacusType}-${numRods}-${decimalPlaces}`} abacusType={abacusType} numRods={numRods} decimalPlaces={decimalPlaces} />;
             case Mode.CONVERT:
-                return <ConvertMode abacusType={abacusType} numRods={numRods} />;
+                return <ConvertMode key={`${abacusType}-${numRods}-${decimalPlaces}`} abacusType={abacusType} numRods={numRods} decimalPlaces={decimalPlaces} />;
             case Mode.COMPUTE:
             default:
-                return <ComputeMode abacusType={abacusType} numRods={numRods} />;
+                return <ComputeMode key={`${abacusType}-${numRods}-${decimalPlaces}`} abacusType={abacusType} numRods={numRods} decimalPlaces={decimalPlaces} />;
         }
     };
 
@@ -41,16 +57,17 @@ const App: React.FC = () => {
         <header className="w-full max-w-5xl mx-auto p-4 md:p-6 flex flex-col items-center text-center">
              <AbacusLogo className="h-16 w-16 mb-4" />
             <h1 className="text-3xl md:text-4xl font-bold text-cyan-400 tracking-wider">
-                React Abacus Simulator
+                {language === 'fa' ? 'شبیه‌ساز چرتکه' : 'React Abacus Simulator'}
             </h1>
             <p className="text-gray-400 mt-2">
-                Learn and master the art of the abacus.
+                {language === 'fa' ? 'هنر محاسبه با چرتکه را یاد بگیر و تمرین کن.' : 'Learn and master the art of the abacus.'}
             </p>
         </header>
-    ), []);
+    ), [language]);
 
     return (
-        <div className="min-h-screen bg-gray-900 text-gray-100 flex flex-col items-center p-4 font-sans">
+        <I18nProvider language={language}>
+        <div className="min-h-screen bg-gray-900 text-gray-100 flex flex-col items-center p-2 sm:p-4 font-sans">
             {Header}
             <main className="w-full flex-grow flex flex-col items-center">
                 <Controls
@@ -58,15 +75,24 @@ const App: React.FC = () => {
                     setMode={setMode}
                     abacusType={abacusType}
                     setAbacusType={setAbacusType}
+                    soundEnabled={soundEnabled}
+                    setSoundEnabled={setSoundEnabled}
+                    language={language}
+                    setLanguage={setLanguage}
+                    numRods={numRods}
+                    setNumRods={setNumRods}
+                    decimalPlaces={decimalPlaces}
+                    setDecimalPlaces={setDecimalPlaces}
                 />
                 <div className="w-full max-w-5xl mt-6">
                     {renderMode()}
                 </div>
             </main>
             <footer className="w-full max-w-5xl mx-auto p-4 text-center text-gray-500 text-sm">
-                <p>Built with React, TypeScript, and Tailwind CSS.</p>
+                <p>{language === 'fa' ? 'ساخته‌شده با React، TypeScript و Tailwind CSS.' : 'Built with React, TypeScript, and Tailwind CSS.'}</p>
             </footer>
         </div>
+        </I18nProvider>
     );
 };
 

@@ -1,0 +1,14 @@
+{
+  "short_name": "Abacus Sim",
+  "name": "React Abacus Simulator",
+  "description": "An interactive Soroban and Suanpan simulator for learning abacus arithmetic.",
+  "icons": [
+    { "src": "icons/icon-192.svg", "type": "image/svg+xml", "sizes": "any", "purpose": "any maskable" },
+    { "src": "icons/icon-512.svg", "type": "image/svg+xml", "sizes": "any", "purpose": "any maskable" }
+  ],
+  "start_url": "./",
+  "display": "standalone",
+  "theme_color": "#111827",
+  "background_color": "#111827",
+  "scope": "./"
+}

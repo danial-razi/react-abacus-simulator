@@ -17,7 +17,7 @@
 </div>
 <br/>
 
-A fully functional abacus simulator with compute, tutorial and conversion modes. Users can switch between Japanese (Soroban) and Chinese (Suanpan) abacus types to learn and perform calculations. Built with React, TypeScript, and Tailwind CSS.
+A bilingual, accessible abacus learning app with compute, guided tutorial, practice, and conversion modes. Switch between Japanese Soroban and Chinese Suanpan layouts, work with decimals, and install it as an offline PWA.
 
 ---
 
@@ -28,12 +28,16 @@ A fully functional abacus simulator with compute, tutorial and conversion modes.
 ## ✨ Features
 
 - **Multiple Abacus Types**: Switch between the Japanese (Soroban - 1/4 beads) and Chinese (Suanpan - 2/5 beads) styles.
-- **Three Learning Modes**:
-  - **Compute Mode**: Use the abacus as a real calculator.
-  - **Tutorial Mode**: An interactive, step-by-step guide to learn how to represent numbers.
-  - **Convert Mode**: Enter a number and see how it's represented on the abacus.
-- **Interactive Experience**: Smooth animations and satisfying sound effects for bead movements.
-- **Responsive Design**: Works beautifully on desktop and mobile devices.
+- **Four Learning Modes**:
+  - **Compute**: Move beads freely or apply addition, subtraction, multiplication, and division.
+  - **Tutorial**: Complete guided, interactive lessons instead of only watching examples.
+  - **Practice**: Solve random challenges with difficulty levels, streaks, scores, and a saved best score.
+  - **Convert**: Enter an integer or decimal and see its bead representation.
+- **Flexible Layout**: Choose 5, 9, or 13 rods and 0–3 decimal places.
+- **Accessible Interaction**: Click, drag, or use Tab, arrow keys, Space, and Enter. Undo/redo shortcuts are supported.
+- **Bilingual UI**: Switch between English and Persian, including RTL layout.
+- **Personal Preferences**: Sound, language, layout settings, lesson progress, and best score persist locally.
+- **Responsive Design**: Keeps usable bead targets on mobile with horizontal scrolling.
 - **PWA Ready**: Install the app on your device for a native-like experience and offline access.
 
 ## 🚀 Quick Start
@@ -59,12 +63,22 @@ Interested in running the project locally or contributing? Here is how to get st
     ```
 4.  **Install dependencies**:
     ```bash
-    npm install
+    npm ci
     ```
 5.  **Start the development server**:
     ```bash
-    npm start
+    npm run dev
     ```
+
+### Quality checks
+
+Run the complete local quality gate before opening a pull request:
+
+```bash
+npm run check
+```
+
+This runs TypeScript, ESLint, unit tests, and the production build.
 
 ## 🤝 Contributing
 

@@ -1,137 +1,83 @@
-
-import React, { useState, useEffect, useMemo } from 'react';
-import { AbacusType } from '../types';
+import React, { useEffect, useMemo } from 'react';
+import type { AbacusType, Language } from '../types';
 import { useAbacus } from '../hooks/useAbacus';
+import { usePersistentState } from '../hooks/usePersistentState';
+import { useI18n } from '../i18n';
+import { highlightsForValue } from '../domain/abacus';
 import Abacus from './Abacus';
 import { playButtonClickSound } from '../utils/audio';
 
 interface TutorialModeProps {
     abacusType: AbacusType;
     numRods: number;
+    decimalPlaces: number;
 }
 
-const getTutorialSteps = (numRods: number) => [
-    { 
-        title: "Welcome to the Abacus!", 
-        description: "Beads above the beam are 'heaven beads' (worth 5), below are 'earth beads' (worth 1). Active beads move towards the beam.", 
-        number: 0,
-        highlights: []
-    },
-    { 
-        title: "Representing '3'", 
-        description: "Count to 3 by pushing up three 'earth' beads on the units rod (far right). Each is worth 1.", 
-        number: 3,
-        highlights: [{ rodIndex: numRods - 1, lowerBeads: 3 }]
-    },
-    { 
-        title: "Representing '5'", 
-        description: "Represent 5 by moving one 'heaven' bead down. Heaven beads are worth 5.", 
-        number: 5,
-        highlights: [{ rodIndex: numRods - 1, upperBeads: [0] }]
-    },
-    { 
-        title: "Representing '8'", 
-        description: "Combine beads to make 8. One heaven bead (5) + three earth beads (3) = 8.", 
-        number: 8,
-        highlights: [{ rodIndex: numRods - 1, upperBeads: [0], lowerBeads: 3 }]
-    },
-    { 
-        title: "Using the Tens Rod for '12'", 
-        description: "For 12, activate '1' on the tens rod (second from right) and '2' on the units rod.", 
-        number: 12,
-        highlights: [
-            { rodIndex: numRods - 2, lowerBeads: 1 },
-            { rodIndex: numRods - 1, lowerBeads: 2 }
-        ]
-    },
-    { 
-        title: "Making '65'", 
-        description: "To represent 65, form a '6' (5+1) on the tens rod and a '5' on the units rod.", 
-        number: 65,
-        highlights: [
-            { rodIndex: numRods - 2, upperBeads: [0], lowerBeads: 1 },
-            { rodIndex: numRods - 1, upperBeads: [0] }
-        ]
-    },
-    { 
-        title: "Complex Number '123'", 
-        description: "Represent 123 using three rods. '1' for hundreds, '2' for tens, and '3' for units.", 
-        number: 123,
-        highlights: [
-            { rodIndex: numRods - 3, lowerBeads: 1 },
-            { rodIndex: numRods - 2, lowerBeads: 2 },
-            { rodIndex: numRods - 1, lowerBeads: 3 }
-        ]
-    },
-    { 
-        title: "Practice Makes Perfect!", 
-        description: "You've learned the basics! Switch to Compute mode to practice your new skills.", 
-        number: 0,
-        highlights: []
-    },
-];
+const tutorialCopy = (language: Language, decimalPlaces: number) => {
+    const en = [
+        ['Welcome to the Abacus!', "Beads above the beam are worth 5 and beads below it are worth 1. Active beads move towards the beam.", null],
+        ["Represent '3'", "Move three lower beads towards the beam on the units rod.", 3],
+        ["Represent '5'", "Move one upper bead towards the beam. Each upper bead is worth 5.", 5],
+        ["Represent '8'", "Combine one upper bead (5) with three lower beads (3).", 8],
+        ["Use the tens rod for '12'", "Set 1 on the tens rod and 2 on the units rod.", 12],
+        ["Make '65'", "Set 6 on the tens rod and 5 on the units rod.", 65],
+        ["A larger number: '123'", "Use the hundreds, tens, and units rods together.", 123],
+        ['Practice makes perfect!', 'You completed the basics. Continue in Practice mode for random challenges.', null],
+    ] as const;
+    const fa = [
+        ['به چرتکه خوش آمدی!', 'مهره‌های بالای تیرک ۵ و مهره‌های پایین آن ۱ ارزش دارند. مهرهٔ فعال به سمت تیرک حرکت می‌کند.', null],
+        ["نمایش عدد ۳", 'سه مهرهٔ پایین را روی میلهٔ یکان به سمت تیرک حرکت بده.', 3],
+        ["نمایش عدد ۵", 'یک مهرهٔ بالا را به سمت تیرک حرکت بده؛ هر مهرهٔ بالا ۵ ارزش دارد.', 5],
+        ["نمایش عدد ۸", 'یک مهرهٔ بالا (۵) را با سه مهرهٔ پایین (۳) ترکیب کن.', 8],
+        ["استفاده از دهگان برای ۱۲", 'روی میلهٔ دهگان ۱ و روی میلهٔ یکان ۲ قرار بده.', 12],
+        ["ساختن عدد ۶۵", 'روی میلهٔ دهگان ۶ و روی میلهٔ یکان ۵ قرار بده.', 65],
+        ["عدد بزرگ‌تر ۱۲۳", 'میله‌های صدگان، دهگان و یکان را با هم به‌کار ببر.', 123],
+        ['تمرین، کلید مهارت است!', 'مبانی را تمام کردی؛ در حالت تمرین سراغ چالش‌های تصادفی برو.', null],
+    ] as const;
+    const steps: ReadonlyArray<readonly [string, string, number | null]> = language === 'fa' ? fa : en;
+    if (decimalPlaces === 0) return steps;
+    const decimalStep: readonly [string, string, number] = language === 'fa'
+        ? ['نمایش عدد اعشاری ۱٫۵', 'یک را روی میلهٔ یکان و پنج را روی اولین میلهٔ اعشار قرار بده.', 1.5]
+        : ["Represent decimal '1.5'", 'Set 1 on the units rod and 5 on the first decimal rod.', 1.5];
+    return [...steps.slice(0, -1), decimalStep, steps.at(-1)!];
+};
 
+const TutorialMode: React.FC<TutorialModeProps> = ({ abacusType, numRods, decimalPlaces }) => {
+    const { language, t } = useI18n();
+    const { rods, value, clear, config, handleUpperBeadClick, handleLowerBeadClick, setUpperBeadActive, setLowerBeadActive } = useAbacus(abacusType, numRods, decimalPlaces);
+    const [savedStep, setStep] = usePersistentState('abacus:tutorial-step', 0);
+    const tutorialSteps = useMemo(() => tutorialCopy(language, decimalPlaces), [decimalPlaces, language]);
+    const step = Math.min(savedStep, tutorialSteps.length - 1);
+    const currentStep = tutorialSteps[step]!;
+    const target = currentStep[2];
+    const isCorrect = target === null || Math.abs(value - target) < 10 ** -(decimalPlaces + 1);
+    const highlights = target === null ? [] : highlightsForValue(target, numRods, abacusType, decimalPlaces);
 
-const TutorialMode: React.FC<TutorialModeProps> = ({ abacusType, numRods }) => {
-    const { rods, value, setValue, config } = useAbacus(abacusType, numRods);
-    const [step, setStep] = useState(0);
+    useEffect(() => clear(), [clear, step]);
 
-    const tutorialSteps = useMemo(() => getTutorialSteps(numRods), [numRods]);
-
-    useEffect(() => {
-        setValue(tutorialSteps[step].number);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [step, abacusType, tutorialSteps]);
-    
-    const currentStep = tutorialSteps[step];
-    
-    const goToNext = () => {
-        if (step < tutorialSteps.length - 1) {
-            playButtonClickSound();
-            setStep(s => s + 1);
-        }
-    };
-    const goToPrev = () => {
-        if (step > 0) {
-            playButtonClickSound();
-            setStep(s => s - 1);
-        }
+    const move = (direction: number) => {
+        playButtonClickSound();
+        setStep(Math.max(0, Math.min(tutorialSteps.length - 1, step + direction)));
     };
 
     return (
         <div className="flex flex-col items-center gap-6">
             <div className="w-full max-w-2xl text-center p-4 bg-gray-800/50 rounded-lg border border-gray-700 shadow-md">
-                <h2 className="text-xl font-bold text-cyan-400 mb-2">{currentStep.title}</h2>
-                <p className="text-gray-300">{currentStep.description}</p>
-                 <p className="mt-4 text-3xl font-mono font-bold text-white tracking-widest">
-                    {value.toLocaleString()}
-                </p>
+                <h2 className="text-xl font-bold text-cyan-400 mb-2">{currentStep[0]}</h2>
+                <p className="text-gray-300">{currentStep[1]}</p>
+                {target !== null && <p className="mt-4 text-lg text-gray-300">{t('target')}: <strong className="font-mono text-3xl text-white" dir="ltr">{target}</strong></p>}
+                {target !== null && <p aria-live="polite" className={`mt-3 font-semibold ${isCorrect ? 'text-emerald-400' : 'text-amber-300'}`}>{isCorrect ? t('correct') : t('tryAgain')}</p>}
             </div>
-            
-            <Abacus 
-                rods={rods} 
-                config={config} 
-                handleUpperBeadClick={()=>{}}
-                handleLowerBeadClick={()=>{}}
-                highlights={currentStep.highlights}
-            />
+
+            <Abacus rods={rods} config={config} decimalPlaces={decimalPlaces} highlights={highlights}
+                handleUpperBeadClick={handleUpperBeadClick} handleLowerBeadClick={handleLowerBeadClick}
+                setUpperBeadActive={setUpperBeadActive} setLowerBeadActive={setLowerBeadActive}
+                interactive={target !== null} />
 
             <div className="flex items-center gap-4 mt-4">
-                <button
-                    onClick={goToPrev}
-                    disabled={step === 0}
-                    className="px-6 py-3 bg-gray-600 text-white font-semibold rounded-lg shadow-lg hover:bg-gray-700 disabled:bg-gray-800 disabled:cursor-not-allowed disabled:text-gray-500 transition-colors"
-                >
-                    Previous
-                </button>
-                <span className="text-gray-400 font-mono">{step + 1} / {tutorialSteps.length}</span>
-                <button
-                    onClick={goToNext}
-                    disabled={step === tutorialSteps.length - 1}
-                    className="px-6 py-3 bg-cyan-600 text-white font-semibold rounded-lg shadow-lg hover:bg-cyan-700 disabled:bg-gray-800 disabled:cursor-not-allowed disabled:text-gray-500 transition-colors"
-                >
-                    Next
-                </button>
+                <button onClick={() => move(-1)} disabled={step === 0} className="px-6 py-3 bg-gray-600 text-white font-semibold rounded-lg shadow-lg hover:bg-gray-700 disabled:bg-gray-800 disabled:cursor-not-allowed disabled:text-gray-500 transition-colors">{t('previous')}</button>
+                <span className="text-gray-400 font-mono" dir="ltr">{step + 1} / {tutorialSteps.length}</span>
+                <button onClick={() => move(1)} disabled={step === tutorialSteps.length - 1 || !isCorrect} className="px-6 py-3 bg-cyan-600 text-white font-semibold rounded-lg shadow-lg hover:bg-cyan-700 disabled:bg-gray-800 disabled:cursor-not-allowed disabled:text-gray-500 transition-colors">{t('next')}</button>
             </div>
         </div>
     );

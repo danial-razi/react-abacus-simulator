@@ -1,63 +1,46 @@
-
-import React, { useState, useEffect } from 'react';
-import { AbacusType } from '../types';
+import React, { useEffect, useState } from 'react';
+import type { AbacusType } from '../types';
 import { useAbacus } from '../hooks/useAbacus';
+import { useI18n } from '../i18n';
 import Abacus from './Abacus';
 
 interface ConvertModeProps {
     abacusType: AbacusType;
     numRods: number;
+    decimalPlaces: number;
 }
 
-const ConvertMode: React.FC<ConvertModeProps> = ({ abacusType, numRods }) => {
-    const { rods, setValue, config, handleUpperBeadClick, handleLowerBeadClick } = useAbacus(abacusType, numRods);
-    const [inputValue, setInputValue] = useState('12345');
+const ConvertMode: React.FC<ConvertModeProps> = ({ abacusType, numRods, decimalPlaces }) => {
+    const { t } = useI18n();
+    const { rods, setValue, config } = useAbacus(abacusType, numRods, decimalPlaces);
+    const [inputValue, setInputValue] = useState(decimalPlaces > 0 ? '123.45' : '12345');
 
     useEffect(() => {
-        const num = parseInt(inputValue, 10);
-        if (!isNaN(num)) {
-            setValue(num);
-        } else {
-            setValue(0);
-        }
+        const parsed = Number(inputValue);
+        setValue(Number.isFinite(parsed) ? parsed : 0);
     }, [inputValue, setValue]);
 
-    useEffect(() => {
-        // Reset when switching abacus type
-        const num = parseInt(inputValue, 10);
-        if (!isNaN(num)) {
-            setValue(num);
-        } else {
-            setValue(0);
+    const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const cleaned = event.target.value.replace(',', '.').replace(/[^0-9.]/g, '');
+        const [integer = '', ...fractionParts] = cleaned.split('.');
+        const integerLimit = Math.max(1, numRods - decimalPlaces);
+        const limitedInteger = integer.slice(0, integerLimit);
+        if (decimalPlaces === 0 || fractionParts.length === 0) {
+            setInputValue(limitedInteger);
+            return;
         }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [abacusType]);
-
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const val = e.target.value.replace(/[^0-9]/g, '');
-        setInputValue(val);
+        setInputValue(`${limitedInteger}.${fractionParts.join('').slice(0, decimalPlaces)}`);
     };
 
     return (
         <div className="flex flex-col items-center gap-6">
             <div className="w-full max-w-md text-center p-4 bg-gray-800/50 rounded-lg border border-gray-700 shadow-md">
-                <label htmlFor="number-input" className="text-gray-400 text-sm mb-2 block">Enter a number to convert</label>
-                <input
-                    id="number-input"
-                    type="text"
-                    value={inputValue}
-                    onChange={handleChange}
-                    className="w-full bg-gray-900/70 border border-gray-600 rounded-lg text-center text-4xl p-3 font-mono text-cyan-400 focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 outline-none"
-                    maxLength={numRods}
-                />
+                <label htmlFor="number-input" className="text-gray-400 text-sm mb-2 block">{t('enterNumber')}</label>
+                <input id="number-input" type="text" inputMode="decimal" value={inputValue} onChange={handleChange}
+                    className="w-full bg-gray-900/70 border border-gray-600 rounded-lg text-center text-4xl p-3 font-mono text-cyan-400 focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 outline-none" dir="ltr" />
             </div>
-            
-            <Abacus 
-                rods={rods} 
-                config={config} 
-                handleUpperBeadClick={() => {}} // Non-interactive in this mode
-                handleLowerBeadClick={() => {}} // Non-interactive in this mode
-            />
+            <Abacus rods={rods} config={config} decimalPlaces={decimalPlaces}
+                handleUpperBeadClick={() => {}} handleLowerBeadClick={() => {}} interactive={false} />
         </div>
     );
 };

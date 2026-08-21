@@ -1,82 +1,49 @@
-const CACHE_NAME = 'abacus-simulator-cache-v2';
+const CACHE_NAME = 'abacus-simulator-cache-v3';
+
+const scopeUrl = () => new URL(self.registration.scope);
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();
-  const scopePath = new URL(self.registration.scope).pathname;
-  event.waitUntil(
-    (async () => {
-      const cache = await caches.open(CACHE_NAME);
-      const cacheTargets = [scopePath, `${scopePath.endsWith('/') ? scopePath : `${scopePath}/`}index.html`];
-      await Promise.all(
-        cacheTargets.map(async (target) => {
-          try {
-            await cache.add(target);
-          } catch {
-            // Ignore failures so install does not abort when an asset is missing.
-          }
-        })
-      );
-    })()
-  );
+  event.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.add(scopeUrl().pathname)));
 });
 
 self.addEventListener('activate', (event) => {
   event.waitUntil(
-    (async () => {
-      const cacheNames = await caches.keys();
-      await Promise.all(
-        cacheNames.map((name) => {
-          if (name !== CACHE_NAME) {
-            return caches.delete(name);
-          }
-          return undefined;
-        })
-      );
-      await self.clients.claim();
-    })()
+    caches.keys()
+      .then((names) => Promise.all(names.filter((name) => name !== CACHE_NAME).map((name) => caches.delete(name))))
+      .then(() => self.clients.claim()),
   );
 });
 
 self.addEventListener('fetch', (event) => {
   const { request } = event;
+  const requestUrl = new URL(request.url);
 
-  if (request.method !== 'GET') {
+  if (request.method !== 'GET' || requestUrl.origin !== self.location.origin) return;
+
+  if (request.mode === 'navigate') {
+    event.respondWith(
+      fetch(request)
+        .then((response) => {
+          event.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.put(request, response.clone())));
+          return response;
+        })
+        .catch(async () => {
+          const cached = await caches.match(request);
+          return cached || caches.match(scopeUrl().pathname);
+        }),
+    );
     return;
   }
 
   event.respondWith(
-    (async () => {
-      const cache = await caches.open(CACHE_NAME);
-      try {
-        const networkResponse = await fetch(request);
-
-        if (
-          networkResponse &&
-          networkResponse.ok &&
-          networkResponse.type === 'basic' &&
-          new URL(request.url).origin === self.location.origin
-        ) {
-          cache.put(request, networkResponse.clone());
-        }
-
-        return networkResponse;
-      } catch (error) {
-        const cachedResponse = await cache.match(request);
-
-        if (cachedResponse) {
-          return cachedResponse;
-        }
-
-        if (request.mode === 'navigate') {
-          const scopePath = new URL(self.registration.scope).pathname;
-          const fallback = await cache.match(`${scopePath.endsWith('/') ? scopePath : `${scopePath}/`}index.html`);
-          if (fallback) {
-            return fallback;
-          }
-        }
-
-        throw error;
+    caches.match(request).then(async (cached) => {
+      if (cached) return cached;
+      const response = await fetch(request);
+      if (response.ok) {
+        event.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.put(request, response.clone())));
       }
-    })()
+      return response;
+    }),
   );
 });

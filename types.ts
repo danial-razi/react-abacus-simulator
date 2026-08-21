@@ -7,15 +7,24 @@ export enum AbacusType {
 export enum Mode {
     COMPUTE = 'compute',
     TUTORIAL = 'tutorial',
+    PRACTICE = 'practice',
     CONVERT = 'convert',
 }
 
+export type Language = 'en' | 'fa';
+
 export interface RodState {
-    upperBeads: boolean[];
+    upperBeadsActive: number;
     lowerBeadsActive: number;
 }
 
 export interface AbacusConfig {
     upperBeads: number;
     lowerBeads: number;
+}
+
+export interface AbacusHighlight {
+    rodIndex: number;
+    upperBeads?: number[];
+    lowerBeads?: number;
 }
