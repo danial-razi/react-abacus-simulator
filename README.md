@@ -91,7 +91,7 @@ This runs TypeScript, ESLint, unit tests, and the production build.
 
 ## 🤝 Contributing
 
-Contributions, issues, and feature requests are welcome! Feel free to check the [issues page](https://github.com/danial-razi/react-abacus-simulator/issues).
+Contributions, issues, and feature requests are welcome! Read the [contribution guide](CONTRIBUTING.md) and check the [issues page](https://github.com/danial-razi/react-abacus-simulator/issues) to get started.
 
 1.  Fork the Project.
 2.  Create your Feature Branch (`git checkout -b feature/AmazingFeature`).
