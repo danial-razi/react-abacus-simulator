@@ -1,6 +1,15 @@
 # React Abacus Simulator
 
 <div align="center">
+  <a href="./docs/assets/abacus-demo.mp4">
+    <img src="./docs/assets/abacus-demo.gif" width="960" alt="React Abacus Simulator demo showing interactive beads, arithmetic, tutorial, practice, conversion, Soroban and Suanpan layouts, and bilingual support">
+  </a>
+  <br/>
+  <sub>14-second feature tour · Click the preview for the MP4 video</sub>
+</div>
+<br/>
+
+<div align="center">
   <a href="https://github.com/danial-razi/react-abacus-simulator/blob/main/LICENSE">
     <img src="https://img.shields.io/github/license/danial-razi/react-abacus-simulator?style=for-the-badge" alt="License">
   </a>
